@@ -1,1 +1,8 @@
-@import url(components/base.css);
+.ajax-filter-loading {
+    @apply relative;
+
+    &:after,
+    #filters-content:after {
+        @apply content-[''] absolute inset-0 bg-white/50 z-20;
+    }
+}
