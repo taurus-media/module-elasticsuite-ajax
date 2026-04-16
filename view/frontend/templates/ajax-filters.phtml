@@ -1,0 +1,163 @@
+<?php
+/**
+ * Taurus_ElasticSuiteAjax - AJAX filter submission handler
+ *
+ * Intercepts filter link clicks inside the layered navigation sidebar and submits
+ * them via AJAX, updating the product list and filter state without a full page reload.
+ *
+ * Response structure (JSON from Plugin\Category\View):
+ *   product_list  - HTML of the category.products block to replace #taurus-ajax-product-wrapper content
+ *   filters       - keyed by requestVar, each entry has { type: 'attribute'|'slider', config: {...} }
+ *
+ * After updating the product list, a 'filter-items-updated' CustomEvent is dispatched on window
+ * so that the filter sidebar AlpineJS components can refresh their item lists and counts.
+ */
+?>
+<script>
+(function () {
+    'use strict';
+
+    const PRODUCT_WRAPPER_SELECTOR = '#taurus-ajax-product-wrapper';
+    const FILTERS_WRAPPER_SELECTOR = '#taurus-ajax-filters-wrapper';
+
+    function getProductWrapper() {
+        return document.querySelector(PRODUCT_WRAPPER_SELECTOR);
+    }
+
+    function getFiltersWrapper() {
+        return document.querySelector(FILTERS_WRAPPER_SELECTOR);
+    }
+
+    function updateWrapperContent(wrapper, htmlString) {
+        // We cannot just insert all the result content via innerHTML,
+        // because it contains script tags. And if we just inser them,
+        // the code inside the script tags will not be executed
+        const content = extractScriptsFromHtml(htmlString);
+
+        // Update HTML without script tags
+        wrapper.innerHTML = content.html;
+
+        // Append script tags
+        content.scripts.forEach(scriptData => {
+            const script = document.createElement('script');
+
+            // Restore attributes
+            Object.entries(scriptData.attributes).forEach(([key, value]) => {
+                script.setAttribute(key, value);
+            });
+
+            if (scriptData.src) {
+                script.src = scriptData.src;
+            } else {
+                script.textContent = scriptData.content;
+            }
+
+            wrapper.appendChild(script);
+        });
+    }
+
+    function extractScriptsFromHtml(htmlString) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlString, 'text/html');
+        const scripts = Array.from(doc.querySelectorAll('script'));
+
+        const extracted = scripts.map(script => ({
+            content: script.textContent,
+            src: script.src || null,
+            attributes: [...script.attributes].reduce((acc, attr) => {
+                acc[attr.name] = attr.value;
+                return acc;
+            }, {})
+        }));
+
+        // Remove scripts from the HTML
+        scripts.forEach(script => script.remove());
+
+        return {
+            html: doc.body.innerHTML,
+            scripts: extracted
+        };
+    }
+
+    function submitFilters(filterUrl) {
+        // Append 'ajax=1' to the filter URL
+        const ajaxUrl = new URL(filterUrl);
+        ajaxUrl.searchParams.set('ajax', '1');
+
+        // Indicate loading state
+        const productWrapper = getProductWrapper();
+        const filtersWrapper = getFiltersWrapper();
+        if (productWrapper) {
+            productWrapper.classList.add('ajax-filter-loading');
+        }
+        if (filtersWrapper) {
+            filtersWrapper.classList.add('ajax-filter-loading');
+        }
+
+        fetch(ajaxUrl.toString(), {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        }).then(function (response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        }).then(function (data) {
+            // Replace the product list content
+            if (productWrapper && data.product_list !== undefined) {
+                updateWrapperContent(productWrapper, data.product_list);
+            }
+
+            // Replace the filters content
+            if (filtersWrapper && data.filters !== undefined) {
+                updateWrapperContent(filtersWrapper, data.filters);
+            }
+
+            // Remove loading state
+            if (productWrapper) {
+                productWrapper.classList.remove('ajax-filter-loading');
+            }
+            if (filtersWrapper) {
+                filtersWrapper.classList.remove('ajax-filter-loading');
+            }
+
+            // Update the browser address bar to the clean URL (without ajax=1)
+            window.history.pushState({ path: filterUrl }, '', filterUrl);
+
+            // Scroll the product area into view smoothly
+            if (productWrapper) {
+                productWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }).catch(function (error) {
+            console.error('Taurus_ElasticSuiteAjax: filter request failed', error);
+
+            // Restore visibility and fall back to regular navigation
+            if (productWrapper) {
+                productWrapper.style.opacity   = '';
+                productWrapper.style.pointerEvents = '';
+            }
+
+            window.location.href = filterUrl;
+        });
+    }
+
+    // Listen to the filter link clicks
+    document.addEventListener('click', function (event) {
+        // Only handle clicks on anchor elements inside the filter navigation
+        const link = event.target.closest(FILTERS_WRAPPER_SELECTOR + ' a[href]');
+        if (!link) {
+            return;
+        }
+
+        // Skip the "skip to product list" accessibility shortcut
+        if (link.getAttribute('href') === '#products-list') return;
+
+        event.preventDefault();
+        submitFilters(link.href);
+    });
+
+    // When the user navigates back/forward with the browser buttons, do a full reload
+    // so the page reflects the correct filter state.
+    window.addEventListener('popstate', function () {
+        window.location.reload();
+    });
+})();
+</script>

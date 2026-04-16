@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Catalog\Controller\Category\View">
+        <plugin name="taurus_elasticsuite_ajax_category_view"
+                type="Taurus\ElasticSuiteAjax\Plugin\Category\View"/>
+    </type>
+    <type name="Magento\CatalogSearch\Controller\Result\Index">
+        <plugin name="taurus_elasticsuite_ajax_search_result"
+                type="Taurus\ElasticSuiteAjax\Plugin\Search\Result"/>
+    </type>
+    <type name="Smile\ElasticsuiteCatalog\Model\Layer\Filter\Item\Attribute">
+        <plugin name="taurus_elasticsuite_ajax_attribute_item_get_url"
+                type="Taurus\ElasticSuiteAjax\Plugin\Layer\Filter\Item\AttributePlugin"/>
+    </type>
+</config>

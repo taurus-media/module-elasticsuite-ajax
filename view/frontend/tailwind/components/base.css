@@ -1,0 +1,9 @@
+@layer components {
+    .ajax-filter-loading {
+        @apply opacity-50 pointer-events-none relative;
+
+        &:after {
+            @apply content-[''] absolute inset-0 bg-white bg-opacity-10;
+        }
+    }
+}

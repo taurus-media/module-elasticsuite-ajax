@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- wrap product list element -->
+        <referenceContainer name="content">
+            <container name="taurus.ajax.product.wrapper"
+                       htmlTag="div"
+                       htmlId="taurus-ajax-product-wrapper"
+                       before="-"/>
+        </referenceContainer>
+        <move element="category.products" destination="taurus.ajax.product.wrapper"/>
+
+        <!-- wrap filters element -->
+        <referenceContainer name="sidebar.main">
+            <container name="taurus.ajax.filters.wrapper"
+                       htmlTag="div"
+                       htmlId="taurus-ajax-filters-wrapper"
+                       before="-"/>
+        </referenceContainer>
+        <move element="catalog.leftnav" destination="taurus.ajax.filters.wrapper"/>
+
+        <!-- Inject the AJAX filter click handler at the bottom of the page -->
+        <referenceContainer name="before.body.end">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="taurus.elasticsuite.ajax.filters"
+                   template="Taurus_ElasticSuiteAjax::ajax-filters.phtml"
+                   after="-"/>
+        </referenceContainer>
+    </body>
+</page>
