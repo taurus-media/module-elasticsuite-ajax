@@ -62,7 +62,7 @@
         const scripts = Array.from(doc.querySelectorAll('script'));
 
         const extracted = scripts.map(script => ({
-            content: script.textContent,
+            content: openFiltersOnMobile(script.textContent),
             src: script.src || null,
             attributes: [...script.attributes].reduce((acc, attr) => {
                 acc[attr.name] = attr.value;
@@ -77,6 +77,15 @@
             html: doc.body.innerHTML,
             scripts: extracted
         };
+    }
+
+    function openFiltersOnMobile(scriptText) {
+        // Search for layered navigation component and update the 'blockOpen' attribute there
+        if (scriptText.indexOf('initLayeredNavigation') !== -1) {
+            scriptText = scriptText.replace('blockOpen: false', 'blockOpen: true');
+        }
+
+        return scriptText;
     }
 
     function submitFilters(filterUrl) {
