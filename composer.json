@@ -2,7 +2,6 @@
     "name": "taurus-media/module-elasticsuite-ajax",
     "description": "AJAX-based layered navigation filtering for Smile ElasticSuite on Hyva themes.",
     "type": "magento2-module",
-    "version": "1.0.1",
     "license": "MIT",
     "require": {
         "php": "^8.1",
