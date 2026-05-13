@@ -132,9 +132,9 @@
             window.history.pushState({ path: filterUrl }, '', filterUrl);
 
             // Scroll the product area into view smoothly
-            if (productWrapper) {
-                productWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            // if (productWrapper) {
+            //     productWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // }
         }).catch(function (error) {
             console.error('Taurus_ElasticSuiteAjax: filter request failed', error);
 
