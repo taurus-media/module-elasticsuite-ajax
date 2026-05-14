@@ -13,4 +13,8 @@
         <plugin name="taurus_elasticsuite_ajax_attribute_item_get_url"
                 type="Taurus\ElasticSuiteAjax\Plugin\Layer\Filter\Item\AttributePlugin"/>
     </type>
+    <type name="Magento\LayeredNavigation\Block\Navigation\State">
+        <plugin name="taurus_elasticsuite_ajax_navigation_state"
+                type="Taurus\ElasticSuiteAjax\Plugin\LayeredNavigation\Block\Navigation\StatePlugin"/>
+    </type>
 </config>

@@ -10,6 +10,7 @@
 namespace Taurus\ElasticSuiteAjax\Plugin\Layer\Filter\Item;
 
 use Smile\ElasticsuiteCatalog\Model\Layer\Filter\Item\Attribute;
+use Taurus\ElasticSuiteAjax\Helper\UrlHelper;
 
 /**
  * Plugin for Attribute item filter.
@@ -26,9 +27,19 @@ class AttributePlugin
      */
     public function afterGetUrl(Attribute $subject, $result)
     {
-        $result = str_replace(['ajax=1&', 'ajax=1'], '', $result);
-        $result = rtrim($result, '?');
+        return UrlHelper::removeAjaxParam($result);
+    }
 
-        return $result;
+    /**
+     * Remove ajax parameter from filter item remove URL.
+     *
+     * @param Attribute $subject Filter item.
+     * @param string    $result Filter item remove URL.
+     *
+     * @return string
+     */
+    public function afterGetRemoveUrl(Attribute $subject, $result)
+    {
+        return UrlHelper::removeAjaxParam($result);
     }
 }
