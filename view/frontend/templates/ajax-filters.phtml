@@ -110,6 +110,9 @@
             if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
             return response.json();
         }).then(function (data) {
+            // Remember current position of the product wrapper
+            const wrapperTopBefore = productWrapper.getBoundingClientRect().top;
+
             // Replace the product list content
             if (productWrapper && data.product_list !== undefined) {
                 updateWrapperContent(productWrapper, data.product_list);
@@ -119,6 +122,14 @@
             if (filtersWrapper && data.filters !== undefined) {
                 updateWrapperContent(filtersWrapper, data.filters);
             }
+
+            // Once the content is updated, adjust the scrolling to stay on the same position
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    const wrapperTopAfter = productWrapper.getBoundingClientRect().top;
+                    window.scrollBy(0, wrapperTopAfter - wrapperTopBefore);
+                });
+            }, 10);
 
             // Remove loading state
             if (productWrapper) {
